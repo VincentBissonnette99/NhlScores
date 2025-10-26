@@ -42,15 +42,27 @@ fun WebScheduleDto.toGames(): List<Game> = WebScoreNowDto(games).toGames()
 fun WebGame.toDetail(): GameDetail {
     val homeRef = homeTeam ?: home
     val awayRef = awayTeam ?: away
+
+    val perScorerCount = mutableMapOf<String, Int>()
+
     val goalsList = goals.orEmpty().map { ev ->
+        val scorerName = ev.name?.default?.trim().orEmpty()
+        val nth = perScorerCount.getOrDefault(scorerName, 0) + 1
+        perScorerCount[scorerName] = nth
+
+        val seasonTotal = ev.scorerSeasonTotal ?: ev.seasonTotal ?: ev.playerTotal
+
         GoalEvent(
             period = ev.periodDescriptor?.number ?: ev.period ?: 0,
             timeInPeriod = ev.timeInPeriod ?: "",
             team = ev.teamAbbrev ?: "",
-            scorer = ev.name?.default ?: "",
-            assists = ev.assists.orEmpty().mapNotNull { it.name?.default }
+            scorer = scorerName,
+            assists = ev.assists.orEmpty().mapNotNull { it.name?.default },
+            scorerSeasonTotal = seasonTotal,
+            nthOfGame = nth
         )
     }
+
     return GameDetail(
         id = id ?: gamePk ?: -1L,
         home = teamLabel(homeRef, "Home"),
@@ -64,5 +76,38 @@ fun WebGame.toDetail(): GameDetail {
         timeRemaining = periodDescriptor?.periodTimeRemaining ?: clock?.timeRemaining,
         startTimeUtc = startTimeUTC,
         goals = goalsList
+    )
+}
+
+fun mergeDetailWithPbp(
+    base: GameDetail,
+    pbp: PlayByPlayDto?
+): GameDetail {
+    if (pbp == null) return base
+
+    val enriched = base.goals.map { g ->
+        val match = pbp.plays.firstOrNull { p ->
+            p.type?.equals("goal", ignoreCase = true) == true &&
+                    (p.periodDescriptor?.number ?: -1) == g.period &&
+                    (p.timeInPeriod ?: "").equals(g.timeInPeriod, ignoreCase = true) &&
+                    (p.teamAbbrev ?: "").equals(g.team, ignoreCase = true) &&
+                    p.scoringPlay?.scorer?.name?.default?.trim().orEmpty()
+                        .equals(g.scorer, ignoreCase = true)
+        }
+        val seasonTotal = match?.scoringPlay?.scorer?.seasonTotal ?: g.scorerSeasonTotal
+        g.copy(scorerSeasonTotal = seasonTotal)
+    }
+
+    return base.copy(goals = enriched)
+}
+
+fun mergeDetailWithBox(
+    base: GameDetail,
+    box: BoxscoreDto?
+): GameDetail {
+    if (box == null) return base
+    return base.copy(
+        homeSog = box.homeTeam?.sog ?: base.homeSog,
+        awaySog = box.awayTeam?.sog ?: base.awaySog
     )
 }

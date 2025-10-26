@@ -88,13 +88,26 @@ private fun DetailContent(d: GameDetail, padding: PaddingValues) {
                 5 -> "SO"
                 else -> "P?"
             }
-            val assists = if (g.assists.isNotEmpty()) "Assists: ${g.assists.joinToString(", ")}" else ""
+
+            val seasonPart = g.scorerSeasonTotal?.let { ordinalFr(it) }
+            val gamePart = if (g.nthOfGame >= 1) ordinalFr(g.nthOfGame) else null
+            val suffix = listOfNotNull(seasonPart, gamePart).joinToString(", ")
+
+            val assists = if (g.assists.isNotEmpty()) "Assists, ${g.assists.joinToString(", ")}" else ""
+
             Column {
                 Text("${g.timeInPeriod}  $label  ${g.team}")
-                Text("${g.scorer}")
+                Text(buildString {
+                    append(g.scorer)
+                    if (suffix.isNotBlank()) append("  (").append(suffix).append(")")
+                })
                 if (assists.isNotBlank()) Text(assists)
                 Divider()
             }
         }
     }
+}
+
+private fun ordinalFr(n: Int): String {
+    return  "${n}"
 }

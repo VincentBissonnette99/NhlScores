@@ -4,12 +4,15 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface NhlWebApi {
-    // Exemples vus dans les docs communautaires
-    // 1) instantané des scores en cours
     @GET("v1/score/now")
     suspend fun scoreNow(): WebScoreNowDto
 
-    // 2) calendrier du jour
-    @GET("v1/schedule/{date}") // date au format YYYY-MM-DD
+    @GET("v1/score/{date}")
     suspend fun scheduleByDate(@Path("date") date: String): WebScheduleDto
+
+    @GET("v1/gamecenter/{gameId}/play-by-play")
+    suspend fun playByPlay(@Path("gameId") gameId: Long): PlayByPlayDto
+
+    @GET("v1/gamecenter/{gameId}/boxscore")
+    suspend fun boxscore(@Path("gameId") gameId: Long): BoxscoreDto
 }

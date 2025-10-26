@@ -5,7 +5,9 @@ data class GoalEvent(
     val timeInPeriod: String,
     val team: String,
     val scorer: String,
-    val assists: List<String>
+    val assists: List<String>,
+    val scorerSeasonTotal: Int?,
+    val nthOfGame: Int
 )
 
 data class GameDetail(

@@ -5,8 +5,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vincent.nhlscores.data.remote.HttpClient
+import com.vincent.nhlscores.data.remote.mergeDetailWithBox
+import com.vincent.nhlscores.data.remote.mergeDetailWithPbp
 import com.vincent.nhlscores.data.remote.toDetail
 import com.vincent.nhlscores.model.GameDetail
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,9 +27,7 @@ class GameDetailViewModel(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
-    init {
-        load()
-    }
+    init { load() }
 
     fun refresh() {
         if (_loading.value) return
@@ -38,15 +40,30 @@ class GameDetailViewModel(
             _loading.value = true
             try {
                 val date = LocalDate.now(ZoneId.of("America/Toronto")).toString()
-                val dto = HttpClient.webApi.scheduleByDate(date)
-                val game = dto.games.firstOrNull { it.id == gameId || it.gamePk == gameId }
-                if (game != null) {
-                    _detail.value = game.toDetail()
-                } else {
+
+                val base = runCatching {
+                    val dto = HttpClient.webApi.scheduleByDate(date)
+                    dto.games.firstOrNull { it.id == gameId || it.gamePk == gameId }?.toDetail()
+                }.getOrNull() ?: runCatching {
                     val now = HttpClient.webApi.scoreNow()
-                    val g2 = now.games.firstOrNull { it.id == gameId || it.gamePk == gameId }
-                    _detail.value = g2?.toDetail()
+                    now.games.firstOrNull { it.id == gameId || it.gamePk == gameId }?.toDetail()
+                }.getOrNull()
+
+                if (base == null) {
+                    _detail.value = null
+                    return@launch
                 }
+
+                val results = listOf(
+                    async { runCatching { HttpClient.webApi.playByPlay(gameId) }.getOrNull() },
+                    async { runCatching { HttpClient.webApi.boxscore(gameId) }.getOrNull() }
+                ).awaitAll()
+
+                val withPbp = mergeDetailWithPbp(base, results[0] as? com.vincent.nhlscores.data.remote.PlayByPlayDto)
+                val withBox = mergeDetailWithBox(withPbp, results[1] as? com.vincent.nhlscores.data.remote.BoxscoreDto)
+
+                _detail.value = withBox
+
             } catch (e: Throwable) {
                 Log.e("NHL", "detail load failed", e)
                 _detail.value = null
