@@ -29,36 +29,39 @@ class TodayViewModel : ViewModel() {
         loadToday()
     }
 
+    private fun todayTorontoStr(): String =
+        LocalDate.now(ZoneId.of("America/Toronto")).toString()
+
     private fun loadToday() {
         viewModelScope.launch {
             if (_loading.value) return@launch
             _loading.value = true
             try {
-                val date = LocalDate.now(ZoneId.of("America/Toronto")).toString()
+                val date = todayTorontoStr()
                 var result: List<Game> = emptyList()
 
-                // Essai 1, instantané
-                runCatching {
-                    HttpClient.webApi.scoreNow().toGames()
-                }.onSuccess { list ->
-                    if (list.isNotEmpty()) {
-                        result = list
-                        Log.d("NHL", "scoreNow ok, ${list.size} matchs")
+                // Essai 1, instantané du moment
+                runCatching { HttpClient.webApi.scoreNow().toGames() }
+                    .onSuccess { list ->
+                        if (list.isNotEmpty()) {
+                            result = list
+                            Log.d("NHL", "scoreNow ok, ${list.size} matchs")
+                        }
                     }
-                }.onFailure { e ->
-                    Log.w("NHL", "scoreNow failed, ${e.message}")
-                }
+                    .onFailure { e ->
+                        Log.w("NHL", "scoreNow failed, ${e.message}")
+                    }
 
-                // Essai 2, par date, seulement si nécessaire
+                // Essai 2, journée exacte reconnue au moment du load
                 if (result.isEmpty()) {
-                    runCatching {
-                        HttpClient.webApi.scheduleByDate(date).toGames()
-                    }.onSuccess { list ->
-                        result = list
-                        Log.d("NHL", "score/$date ok, ${list.size} matchs")
-                    }.onFailure { e ->
-                        Log.e("NHL", "score/$date failed", e)
-                    }
+                    runCatching { HttpClient.webApi.scheduleByDate(date).toGames() }
+                        .onSuccess { list ->
+                            result = list
+                            Log.d("NHL", "score/$date ok, ${list.size} matchs")
+                        }
+                        .onFailure { e ->
+                            Log.e("NHL", "score/$date failed", e)
+                        }
                 }
 
                 _games.value = result

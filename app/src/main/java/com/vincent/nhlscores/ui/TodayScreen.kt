@@ -28,7 +28,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodayScreen(vm: TodayViewModel = viewModel()) {
+fun TodayScreen(onGameClick: (Long) -> Unit = {}, vm: TodayViewModel = viewModel()) {
     val games by vm.games.collectAsState()
     val refreshing by vm.loading.collectAsState()
     val state = rememberSwipeRefreshState(isRefreshing = refreshing)
@@ -52,14 +52,9 @@ fun TodayScreen(vm: TodayViewModel = viewModel()) {
             ) {
                 items(games) { g ->
                     ListItem(
-                        headlineContent = {
-                            Text(
-                                "${g.away} ${g.awayScore}  @  ${g.home} ${g.homeScore}",
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        },
+                        headlineContent = { /* inchangé */ },
                         supportingContent = { Text(formatStatus(g)) },
-                        modifier = Modifier.clickable { /* détail à venir */ }
+                        modifier = Modifier.clickable { onGameClick(g.id) }   // navigate
                     )
                     Divider()
                 }

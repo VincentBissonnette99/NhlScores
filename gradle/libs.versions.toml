@@ -11,6 +11,7 @@ activityCompose = "1.11.0"
 composeBom = "2025.10.01"
 lifecycleViewmodelCompose = "2.9.4"
 moshiKotlin = "1.15.1"
+navigationCompose = "2.9.5"
 pullrefresh = "1.7.5"
 runtime = "1.9.4"
 retrofit = "3.0.0"
@@ -23,6 +24,7 @@ androidx-compose-pullrefresh = { module = "androidx.compose.material:pullrefresh
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

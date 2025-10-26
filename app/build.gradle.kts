@@ -66,4 +66,5 @@ dependencies {
     implementation(libs.squareup.moshi.kotlin)
     implementation(libs.moshi.kotlin.v1151)
     implementation(libs.accompanist.swiperefresh)
+    implementation(libs.androidx.navigation.compose)
 }

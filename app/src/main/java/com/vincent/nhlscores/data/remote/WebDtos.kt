@@ -21,7 +21,8 @@ data class WebGame(
     val homeTeam: WebTeamRef? = null,
     val awayTeam: WebTeamRef? = null,
     val home: WebTeamRef? = null,
-    val away: WebTeamRef? = null
+    val away: WebTeamRef? = null,
+    val goals: List<WebGoal>? = null
 )
 
 data class WebTeamRef(
@@ -49,4 +50,19 @@ data class WebClock(
     val secondsRemaining: Int? = null,
     val running: Boolean? = null,
     val inIntermission: Boolean? = null
+)
+
+data class WebGoal(
+    val period: Int? = null,
+    val periodDescriptor: WebPeriod? = null,
+    val timeInPeriod: String? = null,
+    val teamAbbrev: String? = null,
+    val playerId: Long? = null,
+    val name: WebName? = null,
+    val assists: List<WebAssist>? = null
+)
+
+data class WebAssist(
+    val playerId: Long? = null,
+    val name: WebName? = null
 )

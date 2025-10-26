@@ -3,19 +3,44 @@ package com.vincent.nhlscores
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.vincent.nhlscores.ui.TodayScreen
+import com.vincent.nhlscores.ui.GameDetailScreen
+import com.vincent.nhlscores.ui.theme.NhlScoresTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MaterialTheme {
-                Surface(color = MaterialTheme.colorScheme.background) {
-                    TodayScreen()
+        setContent { AppRoot() }
+    }
+}
+
+@Composable
+fun AppRoot() {
+    NhlScoresTheme {
+        Surface {
+            val nav = rememberNavController()
+            NavHost(navController = nav, startDestination = "today") {
+                composable("today") {
+                    TodayScreen(
+                        onGameClick = { id -> nav.navigate("detail/$id") }
+                    )
+                }
+                composable(
+                    route = "detail/{gameId}",
+                    arguments = listOf(navArgument("gameId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getLong("gameId") ?: -1L
+                    GameDetailScreen(gameId = id, onBack = { nav.popBackStack() })
                 }
             }
         }
     }
 }
+
