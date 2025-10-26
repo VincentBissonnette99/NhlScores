@@ -60,6 +60,7 @@ data class WebGoal(
     val playerId: Long? = null,
     val name: WebName? = null,
     val assists: List<WebAssist>? = null,
+    val goalsToDate: Int? = null,
     val seasonTotal: Int? = null,
     val playerTotal: Int? = null,
     val scorerSeasonTotal: Int? = null
@@ -67,5 +68,6 @@ data class WebGoal(
 
 data class WebAssist(
     val playerId: Long? = null,
-    val name: WebName? = null
+    val name: WebName? = null,
+    val assistsToDate: Int? = null
 )

@@ -38,7 +38,7 @@ fun TodayScreen(
     val state = rememberSwipeRefreshState(isRefreshing = refreshing)
 
     Scaffold(
-        topBar = { CenterAlignedTopAppBar(title = { Text("Matchs du jour") }) }
+        topBar = { CenterAlignedTopAppBar(title = { Text("Today's Games") }) }
     ) { padding ->
         SwipeRefresh(
             state = state,
@@ -58,7 +58,7 @@ fun TodayScreen(
                     item {
                         Spacer(Modifier.height(24.dp))
                         Text(
-                            "Aucun match pour le moment",
+                            "No games for today",
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -105,7 +105,7 @@ private fun formatStatusLine(g: Game): String {
                     lt.format(DateTimeFormatter.ofPattern("HH:mm"))
                 } catch (_: Throwable) { null }
             }
-            if (local != null) "À $local" else "À venir"
+            local ?: "TBD"
         }
         GameStatus.LIVE -> {
             val label = periodLabel(g.period)
@@ -120,7 +120,7 @@ private fun formatStatusLine(g: Game): String {
     }
 }
 
-private fun periodLabel(period: Int?): String {
+fun periodLabel(period: Int?): String {
     val p = period ?: return "P?"
     return when (p) {
         1, 2, 3 -> "P$p"

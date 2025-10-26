@@ -89,25 +89,28 @@ private fun DetailContent(d: GameDetail, padding: PaddingValues) {
                 else -> "P?"
             }
 
-            val seasonPart = g.scorerSeasonTotal?.let { ordinalFr(it) }
-            val gamePart = if (g.nthOfGame >= 1) ordinalFr(g.nthOfGame) else null
-            val suffix = listOfNotNull(seasonPart, gamePart).joinToString(", ")
-
-            val assists = if (g.assists.isNotEmpty()) "Assists, ${g.assists.joinToString(", ")}" else ""
+            val seasonPart = g.scorerSeasonTotal?.let { ordinalEn(it) }
+            val suffix = listOfNotNull(seasonPart).joinToString(", ")
 
             Column {
-                Text("${g.timeInPeriod}  $label  ${g.team}")
+                Text("${g.timeInPeriod}  ${periodLabel(g.period)}  ${g.team}")
                 Text(buildString {
                     append(g.scorer)
-                    if (suffix.isNotBlank()) append("  (").append(suffix).append(")")
+                    if (suffix.isNotBlank()) append(" (").append(suffix).append(")")
                 })
-                if (assists.isNotBlank()) Text(assists)
+                if (g.assists.isNotEmpty()) Text("Assists, ${g.assists.joinToString(", ")}")
                 Divider()
             }
         }
     }
 }
 
-private fun ordinalFr(n: Int): String {
-    return  "${n}"
+private fun ordinalEn(n: Int): String {
+    return when {
+        n % 100 in 11..13 -> "${n}th"
+        n % 10 == 1 -> "${n}st"
+        n % 10 == 2 -> "${n}nd"
+        n % 10 == 3 -> "${n}rd"
+        else -> "${n}th"
+    }
 }

@@ -49,15 +49,27 @@ fun WebGame.toDetail(): GameDetail {
         val scorerName = ev.name?.default?.trim().orEmpty()
         val nth = perScorerCount.getOrDefault(scorerName, 0) + 1
         perScorerCount[scorerName] = nth
-
-        val seasonTotal = ev.scorerSeasonTotal ?: ev.seasonTotal ?: ev.playerTotal
+        val seasonTotal =
+            ev.goalsToDate
+                ?: ev.scorerSeasonTotal
+                ?: ev.seasonTotal
+                ?: ev.playerTotal
+        val assistsLabels = ev.assists.orEmpty().mapNotNull { a ->
+            val n = a.name?.default?.trim()
+            val tot = a.assistsToDate
+            when {
+                n.isNullOrBlank() -> null
+                tot != null -> "$n ($tot)"
+                else -> n
+            }
+        }
 
         GoalEvent(
             period = ev.periodDescriptor?.number ?: ev.period ?: 0,
             timeInPeriod = ev.timeInPeriod ?: "",
             team = ev.teamAbbrev ?: "",
             scorer = scorerName,
-            assists = ev.assists.orEmpty().mapNotNull { it.name?.default },
+            assists = assistsLabels,
             scorerSeasonTotal = seasonTotal,
             nthOfGame = nth
         )
