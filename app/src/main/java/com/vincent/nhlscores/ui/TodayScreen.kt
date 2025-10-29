@@ -1,7 +1,9 @@
 package com.vincent.nhlscores.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -10,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +29,7 @@ import com.vincent.nhlscores.viewmodel.TodayViewModel
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,10 +39,27 @@ fun TodayScreen(
 ) {
     val games by vm.games.collectAsState()
     val refreshing by vm.loading.collectAsState()
+    val date by vm.currentDate.collectAsState()
     val state = rememberSwipeRefreshState(isRefreshing = refreshing)
 
+    val uiFormatter = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US)
+
     Scaffold(
-        topBar = { CenterAlignedTopAppBar(title = { Text("Today's Games") }) }
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(date.format(uiFormatter)) },
+                navigationIcon = {
+                    TextButton(onClick = { vm.goToPreviousDay() }) {
+                        Text("<")
+                    }
+                },
+                actions = {
+                    TextButton(onClick = { vm.goToNextDay() }) {
+                        Text(">")
+                    }
+                }
+            )
+        }
     ) { padding ->
         SwipeRefresh(
             state = state,
@@ -57,10 +78,7 @@ fun TodayScreen(
                 if (games.isEmpty() && !refreshing) {
                     item {
                         Spacer(Modifier.height(24.dp))
-                        Text(
-                            "No games for today",
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                        Text("No games for this date")
                     }
                 }
                 items(games) { g ->
@@ -78,15 +96,11 @@ private fun GameRow(game: Game, onClick: () -> Unit) {
     val subtitle = formatStatusLine(game)
 
     ListItem(
-        headlineContent = {
-            Text(title, fontWeight = FontWeight.SemiBold)
-        },
-        supportingContent = {
-            Text(subtitle)
-        },
+        headlineContent = { Text(title, fontWeight = FontWeight.SemiBold) },
+        supportingContent = { Text(subtitle) },
         modifier = Modifier
             .clickable { onClick() }
-            .fillMaxWidth()
+            .fillMaxSize()
     )
 }
 
@@ -101,11 +115,11 @@ private fun formatStatusLine(g: Game): String {
             val local = g.startTimeUtc?.let { utc ->
                 try {
                     val odt = OffsetDateTime.parse(utc)
-                    val lt = odt.atZoneSameInstant(ZoneId.of("America/Toronto")).toLocalTime()
+                    val lt = odt.atZoneSameInstant(ZoneId.systemDefault()).toLocalTime()
                     lt.format(DateTimeFormatter.ofPattern("HH:mm"))
                 } catch (_: Throwable) { null }
             }
-            local ?: "TBD"
+            local ?: "Scheduled"
         }
         GameStatus.LIVE -> {
             val label = periodLabel(g.period)
@@ -114,7 +128,7 @@ private fun formatStatusLine(g: Game): String {
         }
         GameStatus.INTERMISSION -> {
             val label = periodLabel(g.period)
-            "INT $label"
+            "Intermission $label"
         }
         GameStatus.FINAL -> "Final"
     }
