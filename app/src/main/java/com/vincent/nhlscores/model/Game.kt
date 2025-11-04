@@ -11,5 +11,11 @@ data class Game(
     val status: GameStatus,
     val period: Int?,
     val timeRemaining: String?,
-    val startTimeUtc: String? = null   // nouveau
+    val startTimeUtc: String? = null
 )
+
+val Game.isFinal: Boolean
+    get() = status == GameStatus.FINAL
+
+val Game.isLive: Boolean
+    get() = status == GameStatus.LIVE || status == GameStatus.INTERMISSION

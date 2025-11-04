@@ -67,4 +67,6 @@ dependencies {
     implementation(libs.moshi.kotlin.v1151)
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.accompanist.swiperefresh)
+    implementation(libs.androidx.compose.material.icons.extended)
 }

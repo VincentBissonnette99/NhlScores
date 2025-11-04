@@ -1,89 +1,72 @@
 package com.vincent.nhlscores.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.vincent.nhlscores.model.Game
-import com.vincent.nhlscores.model.GameStatus
+import com.vincent.nhlscores.model.isFinal
+import com.vincent.nhlscores.model.isLive
 import com.vincent.nhlscores.viewmodel.TodayViewModel
-import java.time.OffsetDateTime
-import java.time.ZoneId
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(
-    onGameClick: (Long) -> Unit = {},
-    vm: TodayViewModel = viewModel()
+    viewModel: TodayViewModel,
+    onGameClick: (Long) -> Unit
 ) {
-    val games by vm.games.collectAsState()
-    val refreshing by vm.loading.collectAsState()
-    val date by vm.currentDate.collectAsState()
-    val state = rememberSwipeRefreshState(isRefreshing = refreshing)
-
-    val uiFormatter = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US)
+    val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(date.format(uiFormatter)) },
-                navigationIcon = {
-                    TextButton(onClick = { vm.goToPreviousDay() }) {
-                        Text("<")
-                    }
-                },
+            TopAppBar(
+                title = { Text("NHL Scores") },
                 actions = {
-                    TextButton(onClick = { vm.goToNextDay() }) {
-                        Text(">")
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
         }
     ) { padding ->
-        SwipeRefresh(
-            state = state,
-            onRefresh = { vm.refresh() },
-            indicator = { s, trigger ->
-                SwipeRefreshIndicator(
-                    state = s,
-                    refreshTriggerDistance = trigger
-                )
-            }
-        ) {
-            LazyColumn(
-                contentPadding = padding,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (games.isEmpty() && !refreshing) {
-                    item {
-                        Spacer(Modifier.height(24.dp))
-                        Text("No games for this date")
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            when {
+                state.isLoading -> {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+                state.error != null -> {
+                    Column(
+                        Modifier.align(Alignment.Center).padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { viewModel.refresh() }) { Text("Retry") }
                     }
                 }
-                items(games) { g ->
-                    GameRow(game = g, onClick = { onGameClick(g.id) })
-                    Divider()
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.games) { g ->
+                            GameRow(game = g) { onGameClick(g.id) }
+                        }
+                    }
                 }
             }
         }
@@ -92,54 +75,38 @@ fun TodayScreen(
 
 @Composable
 private fun GameRow(game: Game, onClick: () -> Unit) {
-    val title = "${safeTeam(game.away)} ${game.awayScore}  @  ${safeTeam(game.home)} ${game.homeScore}"
-    val subtitle = formatStatusLine(game)
-
-    ListItem(
-        headlineContent = { Text(title, fontWeight = FontWeight.SemiBold) },
-        supportingContent = { Text(subtitle) },
-        modifier = Modifier
-            .clickable { onClick() }
-            .fillMaxSize()
-    )
-}
-
-private fun safeTeam(name: String?): String {
-    val s = name?.trim().orEmpty()
-    return if (s.isNotEmpty()) s else "Team"
-}
-
-private fun formatStatusLine(g: Game): String {
-    return when (g.status) {
-        GameStatus.PRE -> {
-            val local = g.startTimeUtc?.let { utc ->
-                try {
-                    val odt = OffsetDateTime.parse(utc)
-                    val lt = odt.atZoneSameInstant(ZoneId.systemDefault()).toLocalTime()
-                    lt.format(DateTimeFormatter.ofPattern("HH:mm"))
-                } catch (_: Throwable) { null }
+    Surface(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        tonalElevation = 2.dp,
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("${game.away} at ${game.home}", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    when {
+                        game.isFinal -> "Final, ${game.awayScore} - ${game.homeScore}"
+                        game.isLive -> "P${game.period} ${game.timeRemaining ?: ""}, ${game.awayScore} - ${game.homeScore}"
+                        else -> formatGameTime(game.startTimeUtc)
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
-            local ?: "Scheduled"
         }
-        GameStatus.LIVE -> {
-            val label = periodLabel(g.period)
-            val time = g.timeRemaining?.takeIf { it.isNotBlank() } ?: ""
-            if (time.isNotEmpty()) "$label $time" else label
-        }
-        GameStatus.INTERMISSION -> {
-            val label = periodLabel(g.period)
-            "Intermission $label"
-        }
-        GameStatus.FINAL -> "Final"
     }
 }
 
-fun periodLabel(period: Int?): String {
-    val p = period ?: return "P?"
-    return when (p) {
-        1, 2, 3 -> "P$p"
-        4 -> "OT"
-        5 -> "SO"
-        else -> "P$p"
+private fun formatGameTime(startTimeUtc: String?): String {
+    if (startTimeUtc == null) return "Scheduled"
+
+    return try {
+        val utcTime = ZonedDateTime.parse(startTimeUtc)
+
+        val localTime = utcTime.withZoneSameInstant(ZoneId.systemDefault())
+
+        val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
+        localTime.format(timeFormatter)
+    } catch (e: Exception) {
+        "Scheduled"
     }
 }

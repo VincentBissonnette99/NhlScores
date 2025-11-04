@@ -20,6 +20,7 @@ moshi = "1.15.2"
 
 [libraries]
 accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-pullrefresh = { module = "androidx.compose.material:pullrefresh", version.ref = "pullrefresh" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

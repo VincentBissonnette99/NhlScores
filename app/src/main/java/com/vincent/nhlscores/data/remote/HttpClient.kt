@@ -1,6 +1,5 @@
 package com.vincent.nhlscores.data.remote
 
-import android.util.Log
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -9,26 +8,24 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 object HttpClient {
-    private val logger = HttpLoggingInterceptor { msg -> Log.d("HTTP", msg) }
-        .apply { level = HttpLoggingInterceptor.Level.BODY }
-
-    private val okHttp = OkHttpClient.Builder()
-        .addInterceptor(logger)
-        .build()
-
-    private val moshi = Moshi.Builder()
+    private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    private fun retrofit(base: String): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(base)
-            .client(okHttp)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
+    private val logging = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BASIC
+    }
 
-    val webApi: NhlWebApi = retrofit("https://api-web.nhle.com/").create(NhlWebApi::class.java)
+    private val okHttp = OkHttpClient.Builder()
+        .addInterceptor(logging)
+        .build()
 
-    val statsApi: NhlStatsApi = retrofit("https://api.nhle.com/").create(NhlStatsApi::class.java)
+    val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("https://api-web.nhle.com/")
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .client(okHttp)
+        .build()
+
+    val web: NhlWebApi = retrofit.create(NhlWebApi::class.java)
 }
 

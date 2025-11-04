@@ -7,7 +7,8 @@ data class GoalEvent(
     val scorer: String,
     val assists: List<String>,
     val scorerSeasonTotal: Int?,
-    val nthOfGame: Int
+    val nthOfGame: Int,
+    val assistsSeasonTotals: List<Int?>
 )
 
 data class GameDetail(
@@ -24,3 +25,6 @@ data class GameDetail(
     val startTimeUtc: String?,
     val goals: List<GoalEvent>
 )
+
+val GameDetail.isFinal: Boolean
+    get() = status == GameStatus.FINAL
