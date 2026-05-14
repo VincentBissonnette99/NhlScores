@@ -19,25 +19,41 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vincent.nhlscores.model.GameDetail
+import com.vincent.nhlscores.model.GameStatus
 import com.vincent.nhlscores.model.isFinal
 import com.vincent.nhlscores.viewmodel.GameDetailViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SportsHockey
+import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameDetailScreen(
-    viewModel: GameDetailViewModel,
-    gameId: Long,
-    onBack: () -> Unit
+fun TeamWithLogoDetail(
+    teamName: String,
+    logoUrl: String?,
+    modifier: Modifier = Modifier
 ) {
-    val state by viewModel.uiState.collectAsState()
-
-    LaunchedEffectOnce(key = gameId) {
-        viewModel.load(gameId)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        logoUrl?.let {
+            AsyncImage(
+                model = it,
+                contentDescription = "$teamName logo",
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        Text(
+            text = teamName,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,60 +114,83 @@ fun GameDetailScreen(
                 )
                 .padding(padding)
         ) {
-            when {
-                state.isLoading -> {
-                    Column(
-                        Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            "Loading game details...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
-                state.error != null -> {
-                    Column(
-                        Modifier
-                            .align(Alignment.Center)
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.SportsHockey,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
-                        )
-                        Text(
-                            state.error ?: "Error loading game details",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.headlineSmall,
-                            textAlign = TextAlign.Center
-                        )
-                        Button(
-                            onClick = { viewModel.load(gameId) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
+            Column(Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Try Again")
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                "Loading game details...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                    state.error != null -> {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.SportsHockey,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                state.error ?: "Error loading game details",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.headlineSmall,
+                                textAlign = TextAlign.Center
+                            )
+                            Button(
+                                onClick = { viewModel.load(gameId) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text("Try Again")
+                            }
+                        }
+                    }
+                    state.detail != null -> DetailBody(state.detail!!)
+                    else -> {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                "No game detail available.",
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                "If this appears, the detail request did not return data.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
-                state.detail != null -> DetailBody(state.detail!!)
             }
         }
     }
-}
 }
 
 @Composable
@@ -183,22 +222,18 @@ private fun DetailBody(detail: GameDetail) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = detail.away,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                        TeamWithLogoDetail(
+                            teamName = detail.away,
+                            logoUrl = detail.awayLogo
                         )
                         Text(
                             text = "vs",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
-                        Text(
-                            text = detail.home,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                        TeamWithLogoDetail(
+                            teamName = detail.home,
+                            logoUrl = detail.homeLogo
                         )
                     }
 
@@ -247,16 +282,17 @@ private fun DetailBody(detail: GameDetail) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (detail.isFinal)
-                                "FINAL"
-                            else
-                                "Period ${detail.period} • ${detail.timeRemaining ?: ""}",
+                            text = when {
+                                detail.isFinal -> "FINAL"
+                                detail.period != null -> "Period ${detail.period} • ${detail.timeRemaining ?: ""}"
+                                else -> formatDetailStatus(detail)
+                            },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (detail.isFinal)
-                                MaterialTheme.colorScheme.secondary
-                            else
-                                MaterialTheme.colorScheme.primary
+                            color = when {
+                                detail.isFinal -> MaterialTheme.colorScheme.secondary
+                                else -> MaterialTheme.colorScheme.primary
+                            }
                         )
                     }
 
@@ -446,6 +482,27 @@ private fun getSuffix(n: Int): String {
         n % 10 == 2 -> "nd"
         n % 10 == 3 -> "rd"
         else -> "th"
+    }
+}
+
+private fun formatDetailStatus(detail: GameDetail): String {
+    return when {
+        detail.status == GameStatus.PRE -> detail.startTimeUtc?.let { "Scheduled • ${formatGameTime(it)}" } ?: "Scheduled"
+        detail.period != null -> "Period ${detail.period} • ${detail.timeRemaining ?: ""}"
+        else -> "Scheduled"
+    }
+}
+
+private fun formatGameTime(startTimeUtc: String?): String {
+    if (startTimeUtc == null) return "Scheduled"
+
+    return try {
+        val utcTime = java.time.ZonedDateTime.parse(startTimeUtc)
+        val localTime = utcTime.withZoneSameInstant(java.time.ZoneId.systemDefault())
+        val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("h:mm a")
+        localTime.format(timeFormatter)
+    } catch (e: Exception) {
+        "Scheduled"
     }
 }
 

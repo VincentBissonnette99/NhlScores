@@ -1,6 +1,7 @@
 [versions]
 accompanistSwiperefresh = "0.36.0"
 agp = "8.13.0"
+coil = "2.7.0"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -23,6 +24,7 @@ accompanist-swiperefresh = { module = "com.google.accompanist:accompanist-swiper
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-pullrefresh = { module = "androidx.compose.material:pullrefresh", version.ref = "pullrefresh" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }

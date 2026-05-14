@@ -37,14 +37,34 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.ZoneId
 import java.time.LocalDate
+import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodayScreen(
-    viewModel: TodayViewModel,
-    onGameClick: (Long) -> Unit
+fun TeamWithLogo(
+    teamName: String,
+    logoUrl: String?,
+    modifier: Modifier = Modifier
 ) {
-    val state by viewModel.uiState.collectAsState()
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        logoUrl?.let {
+            AsyncImage(
+                model = it,
+                contentDescription = "$teamName logo",
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        Text(
+            text = teamName,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -208,7 +228,6 @@ fun TodayScreen(
             }
         }
     }
-    }
 }
 
 @Composable
@@ -338,22 +357,18 @@ private fun GameCard(game: Game, onClick: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        text = game.away,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                    TeamWithLogo(
+                        teamName = game.away,
+                        logoUrl = game.awayLogo
                     )
                     Text(
                         text = "at",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
-                    Text(
-                        text = game.home,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                    TeamWithLogo(
+                        teamName = game.home,
+                        logoUrl = game.homeLogo
                     )
                 }
 

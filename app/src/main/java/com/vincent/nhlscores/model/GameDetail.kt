@@ -15,6 +15,8 @@ data class GameDetail(
     val id: Long,
     val home: String,
     val away: String,
+    val homeLogo: String?,
+    val awayLogo: String?,
     val homeScore: Int,
     val awayScore: Int,
     val homeSog: Int,

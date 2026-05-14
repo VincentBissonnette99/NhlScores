@@ -18,9 +18,9 @@ data class TodayUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val games: List<Game> = emptyList(),
-    val selectedDate: LocalDate = LocalDate.now(ZoneOffset.UTC),
-    val minDate: LocalDate = LocalDate.now(ZoneOffset.UTC).minusDays(7),
-    val maxDate: LocalDate = LocalDate.now(ZoneOffset.UTC).plusDays(7)
+    val selectedDate: LocalDate = LocalDate.now(),
+    val minDate: LocalDate = LocalDate.now().minusDays(7),
+    val maxDate: LocalDate = LocalDate.now().plusDays(7)
 )
 
 class TodayViewModel : ViewModel() {
@@ -68,11 +68,11 @@ class TodayViewModel : ViewModel() {
     }
 
     fun goToToday() {
-        loadForDate(LocalDate.now(ZoneOffset.UTC))
+        loadForDate(LocalDate.now())
     }
 
     private fun loadInitial() {
-        loadForDate(LocalDate.now(ZoneOffset.UTC))
+        loadForDate(LocalDate.now())
     }
 
     private fun loadForDate(date: LocalDate) {
