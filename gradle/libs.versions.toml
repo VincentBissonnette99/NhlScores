@@ -25,6 +25,7 @@ androidx-compose-material-icons-extended = { module = "androidx.compose.material
 androidx-compose-pullrefresh = { module = "androidx.compose.material:pullrefresh", version.ref = "pullrefresh" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "runtime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }

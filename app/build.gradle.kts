@@ -70,4 +70,5 @@ dependencies {
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
 }

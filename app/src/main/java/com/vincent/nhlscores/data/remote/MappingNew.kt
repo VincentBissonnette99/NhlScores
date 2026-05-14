@@ -26,12 +26,15 @@ private fun gameIdOf(g: WebGame): Long = g.id ?: g.gamePk ?: -1L
 fun WebScoreNowDto.toGames(): List<Game> = games.map { g ->
     val homeRef = g.homeTeam ?: g.home
     val awayRef = g.awayTeam ?: g.away
+    val homeLogo = homeRef?.logo
+    val awayLogo = awayRef?.logo
+
     Game(
         id = gameIdOf(g),
         home = teamLabel(homeRef, "Home"),
         away = teamLabel(awayRef, "Away"),
-        homeLogo = homeRef?.logo,
-        awayLogo = awayRef?.logo,
+        homeLogo = homeLogo,
+        awayLogo = awayLogo,
         homeScore = homeRef?.score ?: 0,
         awayScore = awayRef?.score ?: 0,
         status = statusFrom(g.gameState, g.clock?.inIntermission),

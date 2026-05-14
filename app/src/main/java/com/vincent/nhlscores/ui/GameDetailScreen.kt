@@ -26,7 +26,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SportsHockey
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.foundation.Image
 
 @Composable
 fun TeamWithLogoDetail(
@@ -38,18 +40,50 @@ fun TeamWithLogoDetail(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        logoUrl?.let {
-            AsyncImage(
-                model = it,
+        if (logoUrl != null) {
+            println("Detail: Attempting to load logo for $teamName: $logoUrl")
+            println("Detail: Logo URL length: ${logoUrl.length}, starts with: ${logoUrl.take(50)}")
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = logoUrl,
+                    imageLoader = rememberNhlImageLoader(),
+                    error = ColorPainter(Color.Red),
+                    placeholder = ColorPainter(Color.Yellow),
+                    onError = { error ->
+                        println("Detail painter load error for $teamName: ${error.result.throwable?.message}")
+                        println("Detail error details: ${error.result}")
+                        println("Detail URL that failed: $logoUrl")
+                    },
+                    onSuccess = {
+                        println("Detail painter load success for $teamName")
+                    }
+                ),
                 contentDescription = "$teamName logo",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(48.dp) // Larger for detail screen
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+        } else {
+            // No logo URL - show team abbreviation placeholder
+            println("No detail logo URL for $teamName")
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(Color.Gray.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = teamName.take(2).uppercase(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
         }
         Text(
             text = teamName,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
     }

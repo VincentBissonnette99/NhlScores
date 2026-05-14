@@ -37,8 +37,9 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.ZoneId
 import java.time.LocalDate
-import coil.compose.AsyncImage
-
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.foundation.Image
 @Composable
 fun TeamWithLogo(
     teamName: String,
@@ -49,12 +50,47 @@ fun TeamWithLogo(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        logoUrl?.let {
-            AsyncImage(
-                model = it,
+        // Debug: Always show what we have
+        println("TeamWithLogo called for $teamName with logoUrl: $logoUrl")
+
+        if (logoUrl != null && logoUrl.isNotBlank()) {
+            println("Attempting to load logo for $teamName: $logoUrl")
+            println("Logo URL length: ${logoUrl.length}, starts with: ${logoUrl.take(50)}")
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = logoUrl,
+                    imageLoader = rememberNhlImageLoader(),
+                    error = ColorPainter(Color.Red),
+                    placeholder = ColorPainter(Color.Yellow),
+                    onError = { error ->
+                        println("Painter load FAILED for $teamName: ${error.result.throwable?.message}")
+                        println("Error details: ${error.result}")
+                        println("URL that failed: $logoUrl")
+                    },
+                    onSuccess = {
+                        println("Painter load SUCCESS for $teamName")
+                    }
+                ),
                 contentDescription = "$teamName logo",
                 modifier = Modifier.size(32.dp)
             )
+            Spacer(modifier = Modifier.width(8.dp))
+        } else {
+            println("No valid logo URL for $teamName")
+            // Show no-logo placeholder
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(Color.Yellow.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = teamName.take(2).uppercase(),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(
