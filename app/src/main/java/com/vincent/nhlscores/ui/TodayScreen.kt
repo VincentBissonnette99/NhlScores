@@ -50,33 +50,21 @@ fun TeamWithLogo(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        // Debug: Always show what we have
-        println("TeamWithLogo called for $teamName with logoUrl: $logoUrl")
-
         if (logoUrl != null && logoUrl.isNotBlank()) {
-            println("Attempting to load logo for $teamName: $logoUrl")
-            println("Logo URL length: ${logoUrl.length}, starts with: ${logoUrl.take(50)}")
             Image(
                 painter = rememberAsyncImagePainter(
                     model = logoUrl,
                     imageLoader = rememberNhlImageLoader(),
                     error = ColorPainter(Color.Red),
                     placeholder = ColorPainter(Color.Yellow),
-                    onError = { error ->
-                        println("Painter load FAILED for $teamName: ${error.result.throwable?.message}")
-                        println("Error details: ${error.result}")
-                        println("URL that failed: $logoUrl")
-                    },
-                    onSuccess = {
-                        println("Painter load SUCCESS for $teamName")
-                    }
+                    onError = { _ -> },
+                    onSuccess = { }
                 ),
                 contentDescription = "$teamName logo",
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
         } else {
-            println("No valid logo URL for $teamName")
             // Show no-logo placeholder
             Box(
                 modifier = Modifier

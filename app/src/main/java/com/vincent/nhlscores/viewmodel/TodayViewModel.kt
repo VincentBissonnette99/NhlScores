@@ -34,11 +34,6 @@ class TodayViewModel : ViewModel() {
         loadInitial()
     }
 
-    private fun todayUtcString(): String {
-        val today = LocalDate.now(ZoneOffset.UTC)
-        return today.format(DateTimeFormatter.ISO_LOCAL_DATE)
-    }
-
     private fun dateToString(date: LocalDate): String {
         return date.format(DateTimeFormatter.ISO_LOCAL_DATE)
     }

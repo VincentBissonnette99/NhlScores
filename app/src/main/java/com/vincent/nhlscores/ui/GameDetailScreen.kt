@@ -41,22 +41,14 @@ fun TeamWithLogoDetail(
         modifier = modifier
     ) {
         if (logoUrl != null) {
-            println("Detail: Attempting to load logo for $teamName: $logoUrl")
-            println("Detail: Logo URL length: ${logoUrl.length}, starts with: ${logoUrl.take(50)}")
             Image(
                 painter = rememberAsyncImagePainter(
                     model = logoUrl,
                     imageLoader = rememberNhlImageLoader(),
                     error = ColorPainter(Color.Red),
                     placeholder = ColorPainter(Color.Yellow),
-                    onError = { error ->
-                        println("Detail painter load error for $teamName: ${error.result.throwable?.message}")
-                        println("Detail error details: ${error.result}")
-                        println("Detail URL that failed: $logoUrl")
-                    },
-                    onSuccess = {
-                        println("Detail painter load success for $teamName")
-                    }
+                    onError = { _ -> },
+                    onSuccess = { }
                 ),
                 contentDescription = "$teamName logo",
                 modifier = Modifier.size(48.dp) // Larger for detail screen
@@ -64,7 +56,6 @@ fun TeamWithLogoDetail(
             Spacer(modifier = Modifier.width(12.dp))
         } else {
             // No logo URL - show team abbreviation placeholder
-            println("No detail logo URL for $teamName")
             Box(
                 modifier = Modifier
                     .size(48.dp)
