@@ -14,6 +14,8 @@ data class Game(
     val period: Int?,
     val timeRemaining: String?,
     val startTimeUtc: String? = null
+    ,
+    val seriesText: String? = null
 )
 
 val Game.isFinal: Boolean

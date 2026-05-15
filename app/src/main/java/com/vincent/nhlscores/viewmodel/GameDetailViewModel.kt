@@ -56,6 +56,34 @@ class GameDetailViewModel : ViewModel() {
                 } catch (e: Exception) {
                 }
 
+                // If seriesText wasn't provided by the landing/linescore responses,
+                // try to load it from the scoreNow feed (used by Today list).
+                if (detail.seriesText.isNullOrEmpty()) {
+                    try {
+                        val now = api.scoreNow()
+                        val matching = now.games.firstOrNull { g ->
+                            val id = g.id ?: g.gamePk ?: -1L
+                            id == gameId
+                        }
+                        val seriesText = matching?.seriesStatus?.let { ss ->
+                            val topWins = ss.topSeedWins ?: 0
+                            val bottomWins = ss.bottomSeedWins ?: 0
+                            val topAbbrev = ss.topSeedTeamAbbrev ?: ""
+                            val bottomAbbrev = ss.bottomSeedTeamAbbrev ?: ""
+                            when {
+                                topWins > bottomWins -> "$topAbbrev leads ${topWins}-${bottomWins}"
+                                bottomWins > topWins -> "$bottomAbbrev leads ${bottomWins}-${topWins}"
+                                else -> "Tied ${topWins}-${bottomWins}"
+                            }
+                        }
+                        if (!seriesText.isNullOrEmpty()) {
+                            detail = detail.copy(seriesText = seriesText)
+                        }
+                    } catch (e: Exception) {
+                        // ignore
+                    }
+                }
+
                 _uiState.value = GameDetailUiState(detail = detail)
             } catch (t: Throwable) {
                 _uiState.value = GameDetailUiState(

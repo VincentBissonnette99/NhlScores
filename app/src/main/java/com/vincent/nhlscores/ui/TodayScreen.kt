@@ -464,6 +464,17 @@ private fun GameCard(game: Game, onClick: () -> Unit) {
                     }
                 )
             }
+            // Series info (playoffs)
+            game.seriesText?.let { s ->
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = s,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }

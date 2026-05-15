@@ -26,6 +26,8 @@ data class GameDetail(
     val timeRemaining: String?,
     val startTimeUtc: String?,
     val goals: List<GoalEvent>
+    ,
+    val seriesText: String? = null
 )
 
 val GameDetail.isFinal: Boolean

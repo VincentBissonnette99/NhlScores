@@ -28,6 +28,17 @@ fun WebScoreNowDto.toGames(): List<Game> = games.map { g ->
     val awayRef = g.awayTeam ?: g.away
     val homeLogo = homeRef?.logo
     val awayLogo = awayRef?.logo
+    val seriesText = g.seriesStatus?.let { ss ->
+        val topWins = ss.topSeedWins ?: 0
+        val bottomWins = ss.bottomSeedWins ?: 0
+        val topAbbrev = ss.topSeedTeamAbbrev ?: ""
+        val bottomAbbrev = ss.bottomSeedTeamAbbrev ?: ""
+        when {
+            topWins > bottomWins -> "$topAbbrev leads ${topWins}-${bottomWins}"
+            bottomWins > topWins -> "$bottomAbbrev leads ${bottomWins}-${topWins}"
+            else -> "Tied ${topWins}-${bottomWins}"
+        }
+    }
 
     Game(
         id = gameIdOf(g),
@@ -41,6 +52,8 @@ fun WebScoreNowDto.toGames(): List<Game> = games.map { g ->
         period = g.periodDescriptor?.number ?: g.period,
         timeRemaining = g.periodDescriptor?.periodTimeRemaining ?: g.clock?.timeRemaining,
         startTimeUtc = g.startTimeUTC
+        ,
+        seriesText = seriesText
     )
 }
 
@@ -83,6 +96,18 @@ fun WebGame.toDetail(): GameDetail {
         timeRemaining = periodDescriptor?.periodTimeRemaining ?: clock?.timeRemaining,
         startTimeUtc = startTimeUTC,
         goals = goalsList
+        ,
+        seriesText = this.seriesStatus?.let { ss ->
+            val topWins = ss.topSeedWins ?: 0
+            val bottomWins = ss.bottomSeedWins ?: 0
+            val topAbbrev = ss.topSeedTeamAbbrev ?: ""
+            val bottomAbbrev = ss.bottomSeedTeamAbbrev ?: ""
+            when {
+                topWins > bottomWins -> "$topAbbrev leads ${topWins}-${bottomWins}"
+                bottomWins > topWins -> "$bottomAbbrev leads ${bottomWins}-${topWins}"
+                else -> "Tied ${topWins}-${bottomWins}"
+            }
+        }
     )
 }
 

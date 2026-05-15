@@ -23,6 +23,22 @@ data class WebGame(
     val home: WebTeamRef? = null,
     val away: WebTeamRef? = null,
     val goals: List<WebGoal>? = null
+    ,
+    val seriesStatus: WebSeriesStatus? = null,
+    val seriesUrl: String? = null
+)
+
+data class WebSeriesStatus(
+    val round: Int? = null,
+    val seriesAbbrev: String? = null,
+    val seriesTitle: String? = null,
+    val seriesLetter: String? = null,
+    val neededToWin: Int? = null,
+    val topSeedTeamAbbrev: String? = null,
+    val topSeedWins: Int? = null,
+    val bottomSeedTeamAbbrev: String? = null,
+    val bottomSeedWins: Int? = null,
+    val gameNumberOfSeries: Int? = null
 )
 
 data class WebTeamRef(

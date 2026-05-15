@@ -321,6 +321,18 @@ private fun DetailBody(detail: GameDetail) {
                         )
                     }
 
+                    // Series info (playoffs)
+                    detail.seriesText?.let { s ->
+                        Text(
+                            text = s,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+
                     // Shots on goal
                     Card(
                         colors = CardDefaults.cardColors(
